@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CollabBoard — Project Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div id="toast-container"></div>
+
+  <section id="auth-screen" class="auth-screen">
+    <div class="auth-card">
+      <div class="brand brand-large">
+        <div class="brand-mark">✓</div>
+        <div>
+          <strong>CollabBoard</strong>
+          <span>Team project management</span>
+        </div>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-auth-tab="login">Login</button>
+        <button class="auth-tab" data-auth-tab="register">Register</button>
+      </div>
+
+      <form id="login-form" class="auth-form">
+        <h1>Welcome back</h1>
+        <p class="muted">Sign in to continue to your projects.</p>
+
+        <label>Email
+          <input id="login-email" type="email" required value="demo@example.com" />
+        </label>
+
+        <label>Password
+          <input id="login-password" type="password" required value="Demo@123" />
+        </label>
+
+        <button class="primary full" type="submit">Login</button>
+        <p class="demo-note">Demo: demo@example.com / Demo@123</p>
+      </form>
+
+      <form id="register-form" class="auth-form hidden">
+        <h1>Create your account</h1>
+        <p class="muted">Start collaborating with your team.</p>
+
+        <label>Full name
+          <input id="register-name" type="text" required minlength="2" />
+        </label>
+
+        <label>Email
+          <input id="register-email" type="email" required />
+        </label>
+
+        <label>Password
+          <input id="register-password" type="password" required minlength="6" />
+        </label>
+
+        <button class="primary full" type="submit">Create account</button>
+      </form>
+    </div>
+  </section>
+
+  <div id="app-shell" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">✓</div>
+        <div>
+          <strong>CollabBoard</strong>
+          <span>Project workspace</span>
+        </div>
+      </div>
+
+      <button id="new-project-btn" class="primary full sidebar-new">+ New project</button>
+
+      <div class="sidebar-heading">
+        <span>YOUR PROJECTS</span>
+        <span id="project-count">0</span>
+      </div>
+
+      <nav id="project-list" class="project-list"></nav>
+
+      <div class="sidebar-bottom">
+        <button id="notifications-btn" class="side-action">
+          <span>🔔 Notifications</span>
+          <b id="notification-count" class="notification-badge hidden">0</b>
+        </button>
+        <button id="logout-btn" class="side-action">↪ Logout</button>
+        <div class="profile-mini">
+          <div id="current-avatar" class="avatar">D</div>
+          <div>
+            <strong id="current-user-name">Demo User</strong>
+            <span id="current-user-email">demo@example.com</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">WORKSPACE</p>
+          <h1 id="page-title">Select a project</h1>
+        </div>
+        <div class="topbar-actions">
+          <button id="refresh-btn" class="icon-btn" title="Refresh">↻</button>
+          <button id="top-notifications-btn" class="icon-btn notification-icon" title="Notifications">🔔
+            <span id="top-notification-dot" class="notification-dot hidden"></span>
+          </button>
+        </div>
+      </header>
+
+      <section id="empty-state" class="empty-state">
+        <div class="empty-icon">▦</div>
+        <h2>Create your first project</h2>
+        <p>Organize work, assign tasks and communicate with your team in one place.</p>
+        <button class="primary" id="empty-new-project">Create project</button>
+      </section>
+
+      <section id="project-view" class="project-view hidden">
+        <div class="project-header">
+          <div>
+            <div class="project-title-row">
+              <h2 id="project-name">Project</h2>
+              <span id="project-role" class="role-chip">Member</span>
+            </div>
+            <p id="project-description" class="muted"></p>
+          </div>
+
+          <div class="project-actions">
+            <button id="members-btn" class="secondary">👥 Members</button>
+            <button id="add-task-btn" class="primary">+ Add task</button>
+            <button id="delete-project-btn" class="danger-outline hidden">Delete</button>
+          </div>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card">
+            <span>Total tasks</span>
+            <strong id="stat-total">0</strong>
+          </div>
+          <div class="stat-card">
+            <span>In progress</span>
+            <strong id="stat-progress">0</strong>
+          </div>
+          <div class="stat-card">
+            <span>Completed</span>
+            <strong id="stat-done">0</strong>
+          </div>
+          <div class="stat-card">
+            <span>Team members</span>
+            <strong id="stat-members">0</strong>
+          </div>
+        </div>
+
+        <div class="board-toolbar">
+          <div class="search-wrap">
+            <span>⌕</span>
+            <input id="task-search" type="search" placeholder="Search tasks..." />
+          </div>
+          <select id="priority-filter">
+            <option value="all">All priorities</option>
+            <option value="high">High priority</option>
+            <option value="medium">Medium priority</option>
+            <option value="low">Low priority</option>
+          </select>
+          <button id="clear-filters" class="secondary">Clear</button>
+        </div>
+
+        <div id="board" class="board">
+          <div class="column" data-status="backlog">
+            <div class="column-head">
+              <div><span class="column-dot backlog-dot"></span><strong>Backlog</strong><span id="count-backlog" class="count">0</span></div>
+              <button class="column-add" data-status="backlog">+</button>
+            </div>
+            <div class="task-list" id="list-backlog"></div>
+          </div>
+
+          <div class="column" data-status="in_progress">
+            <div class="column-head">
+              <div><span class="column-dot progress-dot"></span><strong>In Progress</strong><span id="count-in_progress" class="count">0</span></div>
+              <button class="column-add" data-status="in_progress">+</button>
+            </div>
+            <div class="task-list" id="list-in_progress"></div>
+          </div>
+
+          <div class="column" data-status="done">
+            <div class="column-head">
+              <div><span class="column-dot done-dot"></span><strong>Done</strong><span id="count-done" class="count">0</span></div>
+              <button class="column-add" data-status="done">+</button>
+            </div>
+            <div class="task-list" id="list-done"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Project modal -->
+  <div id="project-modal" class="modal hidden">
+    <div class="modal-card small-card">
+      <button class="modal-close" data-close="project-modal">×</button>
+      <h2>Create project</h2>
+      <p class="muted">Create a shared workspace for your team.</p>
+      <form id="project-form">
+        <label>Project name
+          <input id="project-input-name" required maxlength="100" placeholder="e.g. Website Redesign" />
+        </label>
+        <label>Description
+          <textarea id="project-input-description" rows="4" placeholder="What is this project about?"></textarea>
+        </label>
+        <button class="primary full" type="submit">Create project</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Task modal -->
+  <div id="task-modal" class="modal hidden">
+    <div class="modal-card">
+      <button class="modal-close" data-close="task-modal">×</button>
+      <h2 id="task-modal-title">Create task</h2>
+      <p class="muted">Add the details your team needs to complete this task.</p>
+      <form id="task-form">
+        <input id="task-id" type="hidden" />
+        <label>Task title
+          <input id="task-title" required maxlength="160" placeholder="e.g. Design landing page" />
+        </label>
+        <label>Description
+          <textarea id="task-description" rows="4" placeholder="Describe the work..."></textarea>
+        </label>
+        <div class="form-grid">
+          <label>Status
+            <select id="task-status">
+              <option value="backlog">Backlog</option>
+              <option value="in_progress">In Progress</option>
+              <option value="done">Done</option>
+            </select>
+          </label>
+          <label>Priority
+            <select id="task-priority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </label>
+        </div>
+        <div class="form-grid">
+          <label>Assign to
+            <select id="task-assignee">
+              <option value="">Unassigned</option>
+            </select>
+          </label>
+          <label>Due date
+            <input id="task-due-date" type="date" />
+          </label>
+        </div>
+        <button class="primary full" type="submit">Save task</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Task details -->
+  <div id="task-details-modal" class="modal hidden">
+    <div class="modal-card task-detail-card">
+      <button class="modal-close" data-close="task-details-modal">×</button>
+      <div class="detail-header">
+        <div>
+          <span id="detail-priority" class="priority-chip medium">Medium</span>
+          <h2 id="detail-title">Task</h2>
+          <p id="detail-description" class="muted"></p>
+        </div>
+        <button id="edit-task-btn" class="secondary">Edit</button>
+      </div>
+
+      <div class="detail-meta">
+        <div><span>Assignee</span><strong id="detail-assignee">Unassigned</strong></div>
+        <div><span>Due date</span><strong id="detail-due">No due date</strong></div>
+        <div><span>Created by</span><strong id="detail-creator">-</strong></div>
+      </div>
+
+      <div class="comments-section">
+        <div class="section-title">
+          <h3>Comments & communication</h3>
+          <span id="comment-count-label">0 comments</span>
+        </div>
+        <div id="comments-list" class="comments-list"></div>
+        <form id="comment-form" class="comment-form">
+          <div id="comment-avatar" class="avatar">D</div>
+          <input id="comment-input" required maxlength="2000" placeholder="Write a comment..." />
+          <button class="primary" type="submit">Send</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Members -->
+  <div id="members-modal" class="modal hidden">
+    <div class="modal-card small-card">
+      <button class="modal-close" data-close="members-modal">×</button>
+      <h2>Project members</h2>
+      <p class="muted">Collaborators who can view and manage project tasks.</p>
+
+      <form id="member-form" class="inline-form">
+        <input id="member-email" type="email" placeholder="member@email.com" required />
+        <button class="primary" type="submit">Add</button>
+      </form>
+
+      <div id="members-list" class="members-list"></div>
+    </div>
+  </div>
+
+  <!-- Notifications -->
+  <div id="notifications-panel" class="notifications-panel hidden">
+    <div class="notifications-head">
+      <strong>Notifications</strong>
+      <button id="mark-all-read">Mark all read</button>
+    </div>
+    <div id="notifications-list"></div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
